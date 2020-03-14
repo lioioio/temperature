@@ -158,6 +158,14 @@ class UITaskBase:
 
     def show(self):
         self.layout.render()
+    
+    def plot(self, data):
+        x = data["x"]
+        y = data["t"]
+        plt.plot(x, y,)
+        plt.xlabel('Время')
+        plt.ylabel('Teмпература')
+        plt.grid(True)
 
 
 class UITask1(UITaskBase):
@@ -174,14 +182,14 @@ class UITask1(UITaskBase):
         self.select_city_wg = create_dropdown(options=self.cities, description="Город")
         self.input_area_wg = widgets.Text(
             value='',
-            placeholder='номер раийона',
+            placeholder='номер района',
             description='Район:',
             disabled=False,
             style={'description_width': 'initial'}
         )
         self.input_house_wg = widgets.Text(
             value='',
-            placeholder='номер дама',
+            placeholder='номер дома',
             description='Дом:',
             disabled=False,
             style={'description_width': 'initial'}
@@ -274,14 +282,6 @@ class UITask2(UITaskBase):
         dbcon.close()
         self.plot(data)
 
-    def plot(self, data):
-        x = data["x"]
-        y = data["t"]
-        plt.plot(x, y,)
-        plt.xlabel('Время')
-        plt.ylabel('Teмпература')
-        plt.grid(True)
-
 
 class UITask3(UITaskBase):
 
@@ -329,19 +329,103 @@ class UITask3(UITaskBase):
         dbcon.close()
         self.plot(data)
 
-    def plot(self, data):
-        x = data["x"]
-        y = data["t"]
-        plt.plot(x, y,)
-        plt.xlabel('Время')
-        plt.ylabel('Teмпература')
-        plt.grid(True)
 
 
 class UITask4(UITaskBase):
-
+    """"""
     def __init__(self):
-        pass
+        super().__init__()
+      
+        self.output = widgets.HTML(
+                value='',
+                placeholder='',
+                description='',
+        )
+
+        self.select_city_wg = create_dropdown(options=self.cities, description="Город")
+        self.input_area_wg = widgets.Text(
+            value='',
+            placeholder='номер района',
+            description='Район:',
+            disabled=False,
+            style={'description_width': 'initial'}
+        )
+        self.input_house_wg = widgets.Text(
+            value='',
+            placeholder='номер дома',
+            description='Дом:',
+            disabled=False,
+            style={'description_width': 'initial'}
+        )
+        self.input_apartment_wg = widgets.Text(
+            value='',
+            placeholder='номер квартиры',
+            description='Квартира:',
+            disabled=False,
+            style={'description_width': 'initial'}
+        )
+
+        self.show_btn = widgets.Button(
+            description="Показать",
+            disabled=False,
+            button_style='primary',
+            tooltip='',
+            icon='search'
+        )
+        self.show_btn.on_click(self.on_click_show)
+        self.layout.add_into_upper_pane(self.show_btn)
+        self.layout.add_into_upper_pane(self.select_city_wg)
+        self.layout.add_into_upper_pane(self.input_area_wg)
+        self.layout.add_into_upper_pane(self.input_house_wg)
+        self.layout.add_into_upper_pane(self.input_apartment_wg)
+        self.layout.add_into_lower_pane(self.output)
+    
+    def add_content_to_HTMLbox(self, message, css='style="color: black"'):
+        self.output.value = f'<h3 style="{css}">{message}</h3>'
+    
+    def on_click_show(self, btn):
+        # Обработчик нажатия на кнопку поиска
+        
+        digit_pattern = re.compile("^[0-9]+$")
+
+        values = [
+            self.input_area_wg.value,
+            self.input_house_wg.value,
+            self.input_apartment_wg.value
+        ]
+        for value in values:
+            if not digit_pattern.match(value):
+                self.add_content_to_HTMLbox("Ошибка ввода", "color: red")
+                return
+        self.add_content_to_HTMLbox("")
+        
+        city_id = self.city_map.translator.translate(self.select_city_wg.value)   
+        
+        data = self.__load(city_id, values[0], values[1], values[2])
+        
+        if len(data["x"]) != 0:
+            self.plot(data)
+        else:
+            self.add_content_to_HTMLbox(f"Ошибка: ", "color: red")
+    
+    def __load(self, city, area, house, apartment):
+        dbcon = sqlite3.connect("./temperature.db")
+        cursor = dbcon.cursor()
+        
+        sql = f"""SELECT * FROM apartment_temperature WHERE
+                city_id = {city} and
+                area_id = {area} and
+                house_id = {house} and
+                apartment_id = {apartment};
+        """
+        cursor.execute(sql)
+        data = {"x": [], "t": []}
+        
+        for row in cursor.fetchall():
+            data["x"].append(row[0])
+            data["t"].append(row[5])
+        dbcon.close()
+        return data
 
 
 def task1():
