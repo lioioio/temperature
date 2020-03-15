@@ -80,7 +80,7 @@ def add_note(day, event, text, *, todo=None):
 
 def get_notes(day, event):
     """Функция возвращает заметки (задачи) для конкретного дня и события"""
-    return storage["note"][f"({day},{event})"]
+    return storage["note"].get(f"({day},{event})", {})
 
 
 def get_all_notes():

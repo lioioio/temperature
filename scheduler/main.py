@@ -98,8 +98,8 @@ class Cli(cmd.Cmd):
             day = args.split()[0]
             event = args.split()[1]
             note_num = args.split()[2]
-            if days.get(day) and event.isdigit() and note_num.isdigit():
-                storage.get_note(days.get(day), int(event), int(note_num))
+            if is_day(day):
+                print(storage.get_notes(day, event).get(note_num, "Заметка отсутствует"))
             else:
                 print(error_message)
         else:
@@ -126,3 +126,4 @@ if __name__ == "__main__":
         cli.cmdloop()
     except KeyboardInterrupt:
         exit()
+
