@@ -54,14 +54,19 @@ class Cli(cmd.Cmd):
             print(error_message)
 
     def do_add_note(self, args):
-        """Описание"""
+        """
+            Добавления методов
+                день
+                событие
+                текст 
+        """
         args = args.split()
         if len(args) > 2:
             day = args[0]
 
             if is_day(day):
                 event = args[1]
-                note = args[2:]
+                note = ''.join(args[2:])
                 storage.add_note(day, event, note)
                 print("Заметка добавлена")
             else:
@@ -70,11 +75,16 @@ class Cli(cmd.Cmd):
             print(error_message)
 
     def do_add_todo(self, args):
-        """Описание"""
+        """
+            Добавления методов
+                день
+                событие
+                текст 
+        """
         if len(args.split()) > 2:
             day = args.split()[0]
             event = args.split()[1]
-            note = args.split()[2:]
+            note = ''.join(args.split()[2:])
 
             if is_day(day):
                 storage.add_note(day, event, note, todo=True)
@@ -84,16 +94,31 @@ class Cli(cmd.Cmd):
             print(error_message)
 
     def do_mark_as_done(self, args):
+        """
+            ргументы
+                день
+                событие
+                номер заметки
+        """
         if len(args.split()) == 3:
+
             day = args.split()[0]
-            event = args.split()[1]
-            note_num = args.split()[2]
-            storage.done(days.get(day), int(event), int(note_num))
+            if is_day(day):
+
+                event = args.split()[1]
+                note_num = args.split()[2]
+                storage.done(day, event, note_num)
         else:
             print(error_message)
 
     def do_get_note(self, args):
-        """Выводит заметки"""
+        """Выводит заметку
+            аргументы
+                день
+                событие
+                номер заметки
+        """
+
         if len(args.split()) == 3:
             day = args.split()[0]
             event = args.split()[1]
